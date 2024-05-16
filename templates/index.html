@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Chatbot</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .chat-container {
+            max-width: 500px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.3);
+            /* Transparent black background */
+
+
+            border-radius: 8px;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .chat-box {
+            height: 300px;
+            overflow-y: scroll;
+            padding: 20px;
+        }
+
+        ul#chat-messages {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        ul#chat-messages li {
+            margin-bottom: 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            max-width: 70%;
+        }
+
+        ul#chat-messages li.user {
+            background-color: #007bff;
+            color: #fff;
+            text-align: right;
+            margin-left: auto;
+        }
+
+        ul#chat-messages li.bot {
+            background-color: #28a745;
+            color: #fff;
+            text-align: left;
+            margin-right: auto;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 80px);
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 60px;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            margin-right: 55px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #btn {
+            background-color: #28a745;
+            float: right;
+        }
+
+        .main-container {
+
+            margin-top: 50px;
+            display: flexbox;
+            justify-content: center;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url("/static/background.jpg");
+            background-size: 100%;
+            /* Cover both width and height of the viewport */
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <center>
+            <h2>
+                Chatbot for medical diagnosis
+            </h2>
+        </center>
+        <div class="chat-container">
+            <div class="chat-box" id="chat-box">
+                <ul id="chat-messages">
+                    <!-- Chat messages will be dynamically added here -->
+                </ul>
+            </div>
+            <input type="text" id="user-input" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()" id="btn">Send</button>
+        </div>
+    </div>
+
+
+
+    <script>
+        function isBlank() {
+            txt = document.getElementById("user-input").value
+            if (!txt) {
+                return false
+            }
+            return true
+        }
+
+        function sendMessage() {
+            if (!isBlank()) {
+                return
+            }
+            var userInput = document.getElementById('user-input').value;
+            addMessage('user', userInput);
+
+            // Send userInput to Flask route
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/chat", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var botResponse = JSON.parse(xhr.responseText).message;
+                    addMessage('bot', botResponse);
+                }
+            };
+            var formData = "message=" + encodeURIComponent(userInput);
+            xhr.send(formData);
+
+            document.getElementById('user-input').value = ''; // Clear input field
+
+        }
+        function handleKeyPress(event) {
+            if (event.keyCode === 13) { // 13 is the Enter key code
+                if (isBlank()) {
+                    sendMessage();
+                }
+            }
+        }
+
+
+
+        function addMessage(sender, message) {
+            var chatMessages = document.getElementById('chat-messages');
+            var messageItem = document.createElement('li');
+            messageItem.classList.add(sender);
+            messageItem.innerText = message;
+            chatMessages.appendChild(messageItem);
+
+            // Scroll the last message into view
+            messageItem.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+
+    </script>
+</body>
+
+</html>
